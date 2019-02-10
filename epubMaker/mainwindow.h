@@ -18,6 +18,7 @@ public:
     QString sourceDir;
     QString destinationDir;
     QString gabaritDir;
+    QString massDir;
 
 private slots:
 
@@ -29,6 +30,14 @@ private slots:
 
     void on_selectGabarit_clicked();
 
+    void on_selectMassFolder_clicked();
+
+    void on_lunchMassConvert_clicked();
+
+    void on_selectGabaritMass_clicked();
+
+    void on_testButton_clicked();
+
 private:
     Ui::MainWindow *ui;    
     int findFiles();
@@ -36,6 +45,7 @@ private:
     void createPages(int nbPages);
     void createOpf(int nbPages);
     void createToc(int nbPages, QString name);
+    void folderZip(QString sourceDir, QString destinationDir);
     QString selectFolder();
 };
 

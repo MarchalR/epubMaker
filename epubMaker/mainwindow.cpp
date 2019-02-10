@@ -6,7 +6,8 @@
 #include <QDir>
 #include <QDebug>
 #include <QFileDialog>
-
+#include <zip_file.hpp>
+#include <QDirIterator>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -39,7 +40,119 @@ void MainWindow::on_goButton_clicked()
 
     createOpf(nbPages);
     createToc(nbPages, name);
+
 }
+
+
+void MainWindow::on_testButton_clicked()
+{
+    sourceDir = "/Users/AlDrac/massDir/testEpub1_epub";
+    destinationDir = "/Users/AlDrac/massDir";
+
+    folderZip(sourceDir, destinationDir);
+}
+
+
+
+void MainWindow::folderZip(QString sourceDir, QString destinationDir){
+
+      std::string utf8_destDir = destinationDir.toUtf8().constData();
+      std::string utf8_sourceDir = sourceDir.toUtf8().constData();
+
+      miniz_cpp::zip_file file;
+
+
+      std::string toCopy;
+
+
+      //file.write(utf8_sourceDir);
+      //file.save(std::string("/Users/AlDrac/massDir/test.zip"));
+
+
+      QDirIterator it(sourceDir, QDirIterator::Subdirectories);
+
+      QStringList fileList;
+         do
+         {
+             fileList << it.next();
+         } while (it.hasNext());
+
+
+
+      QStringList result;
+
+      /* FONCTIONNE MAIS DOIT SUPPR DEBUT PATH
+      foreach (const QString &str, fileList) {
+             if (!(str.contains("/."))){
+                 result += str;
+                toCopy = str.toUtf8().constData();
+                qDebug() << str;
+                file.write(toCopy);
+             }
+
+         }
+      */
+
+
+      // SUPPR DEBUT PATH MAIS NE FONCTIONNE PAS
+      foreach (const QString &str, fileList) {
+             if (!(str.contains("/."))){
+                 //result += str;
+                 QString string = str;
+                 string.replace("/Users/AlDrac/massDir/testEpub1_epub","");
+
+                 std::string stringToCons (string.toUtf8());
+                 static const std::string& stringCons = stringToCons ;
+
+
+                toCopy = stringCons;
+                qDebug() << string;
+                file.write(toCopy);
+             }
+
+         }
+
+
+
+
+      file.save(std::string("/Users/AlDrac/massDir/test.zip"));
+
+      //qDebug() << result;
+
+}
+
+
+
+void MainWindow::on_lunchMassConvert_clicked()
+{
+    QDir directory(massDir);
+    QStringList allfiles = directory.entryList(QDir::AllEntries);
+    for (int i = 0; i < 2; i++){
+        qDebug() << "suppr" << allfiles.value(0);
+        allfiles.removeAt(0);
+    }
+
+    for (int i = 0; i < allfiles.length(); i++){
+        sourceDir = massDir + "/" + allfiles.value(i);
+        destinationDir = massDir + "/" + allfiles.value(i) + "_epub";
+
+        int nbPages = findFiles();
+
+        createEpubDir(gabaritDir, destinationDir, true); //Create Epub Folder (EpubGen) and copy gabarit elements
+        createPages(nbPages); //Create a page for each pictures in sourceDir folder and put them in destinationDir/OEPBS folder
+
+        QString destinationDirImg = destinationDir + "/OEBPS/img";
+        createEpubDir(sourceDir, destinationDirImg, true); //Copy imgs from testEpub to EpubGen/OEBPS/img
+
+        createOpf(nbPages);
+        createToc(nbPages, allfiles.value(i));
+
+    }
+
+    qDebug() << "file list" << allfiles.length();
+
+}
+
 
 QString MainWindow::selectFolder(){
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -197,9 +310,11 @@ void MainWindow::on_selectGabarit_clicked()
     ui->selectGabarit->setText(gabaritDir);
 }
 
-
-
-
+void MainWindow::on_selectGabaritMass_clicked()
+{
+    gabaritDir = selectFolder();
+    ui->selectGabaritMass->setText(gabaritDir);
+}
 
 
 /* Get all elements in folder, keep for reference
@@ -207,5 +322,17 @@ QDir directory("/Users/AlDrac/EpubGen/OEBPS");
 QStringList allfiles = directory.entryList(QDir::AllEntries);
 qDebug() << "file list" << allfiles;
 */
+
+
+
+void MainWindow::on_selectMassFolder_clicked()
+{
+    massDir = selectFolder();
+    ui->selectMassFolder->setText(massDir);
+}
+
+
+
+
 
 
