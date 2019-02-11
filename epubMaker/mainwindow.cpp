@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <zip_file.hpp>
 #include <QDirIterator>
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -74,14 +75,25 @@ void MainWindow::folderZip(QString sourceDir, QString destinationDir){
       QStringList fileList;
          do
          {
-             fileList << it.next();
+             fileList << it.next().replace("/Users/AlDrac/massDir/testEpub1_epub","");
+             //fileList << it.next();
          } while (it.hasNext());
 
-
+        qDebug() << fileList;
 
       QStringList result;
 
-      /* FONCTIONNE MAIS DOIT SUPPR DEBUT PATH
+      // FONCTIONNE MAIS DOIT SUPPR DEBUT PATH -> mise en place du replace en amon mais ce qui marchait sans le replace ne fonctionne plus...
+      foreach (const QString &str, fileList) {
+                 //result += str;
+                 toCopy = str.toUtf8().constData();
+                 file.write(toCopy);
+
+         }
+
+
+      /*
+      // FONCTIONNE MAIS DOIT SUPPR DEBUT PATH
       foreach (const QString &str, fileList) {
              if (!(str.contains("/."))){
                  result += str;
@@ -89,17 +101,16 @@ void MainWindow::folderZip(QString sourceDir, QString destinationDir){
                 qDebug() << str;
                 file.write(toCopy);
              }
-
          }
-      */
+        */
 
 
       // SUPPR DEBUT PATH MAIS NE FONCTIONNE PAS
-      foreach (const QString &str, fileList) {
+      /*foreach (const QString &str, fileList) {
              if (!(str.contains("/."))){
                  //result += str;
                  QString string = str;
-                 string.replace("/Users/AlDrac/massDir/testEpub1_epub","");
+                 string;
 
                  std::string stringToCons (string.toUtf8());
                  static const std::string& stringCons = stringToCons ;
@@ -110,14 +121,14 @@ void MainWindow::folderZip(QString sourceDir, QString destinationDir){
                 file.write(toCopy);
              }
 
-         }
+         }*/
 
 
 
 
       file.save(std::string("/Users/AlDrac/massDir/test.zip"));
 
-      //qDebug() << result;
+      qDebug() << result;
 
 }
 

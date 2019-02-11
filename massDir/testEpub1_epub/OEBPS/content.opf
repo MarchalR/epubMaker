@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/" version="3.0" unique-identifier="bookid" prefix="rendition: http://www.idpf.org/vocab/rendition/# ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/"> <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><meta name="generator" content="Remi Marchal"/><meta name="cover" content="couv.png"/><dc:title>Let's go on holiday</dc:title><dc:creator>Lesley Ormal-Grenon, Marion Puech</dc:creator><dc:subject>jeunesse</dc:subject><dc:publisher>AlDrac Jeunesse</dc:publisher><dc:date>2016-06-30</dc:date><dc:rights>© AlDrac Éditions, 2016</dc:rights><dc:language>fr</dc:language><meta property="dcterms:modified">2016-08-09T08:59:46Z</meta><dc:identifier id="bookid">holiday</dc:identifier><!--fixed-layout options--><meta property="rendition:layout">pre-paginated</meta><meta property="rendition:orientation">landscape</meta><meta property="rendition:spread">none</meta></metadata><manifest><item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="holiJS" href="js/script.js" media-type="text/javascript"/><item id="holiCSS.css" href="css/style.css" media-type="text/css"/>
+<item id="img0" href="img/page0.png" media-type="image/png"/>
+<item id="page0" href="page0.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img1" href="img/page1.png" media-type="image/png"/>
+<item id="page1" href="page1.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img2" href="img/page2.png" media-type="image/png"/>
+<item id="page2" href="page2.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img3" href="img/page3.png" media-type="image/png"/>
+<item id="page3" href="page3.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img4" href="img/page4.png" media-type="image/png"/>
+<item id="page4" href="page4.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img5" href="img/page5.png" media-type="image/png"/>
+<item id="page5" href="page5.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img6" href="img/page6.png" media-type="image/png"/>
+<item id="page6" href="page6.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img7" href="img/page7.png" media-type="image/png"/>
+<item id="page7" href="page7.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img8" href="img/page8.png" media-type="image/png"/>
+<item id="page8" href="page8.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+<item id="img9" href="img/page9.png" media-type="image/png"/>
+<item id="page9" href="page9.xhtml" media-type="application/xhtml+xml"  properties="scripted"/>
+</manifest><spine>
+<itemref idref="page0"/>
+<itemref idref="page1"/>
+<itemref idref="page2"/>
+<itemref idref="page3"/>
+<itemref idref="page4"/>
+<itemref idref="page5"/>
+<itemref idref="page6"/>
+<itemref idref="page7"/>
+<itemref idref="page8"/>
+<itemref idref="page9"/>
+</spine></package>
