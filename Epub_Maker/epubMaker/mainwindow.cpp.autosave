@@ -367,9 +367,3 @@ void MainWindow::on_selectMassFolder_clicked()
     massDir = selectFolder();
     ui->selectMassFolder->setText(massDir);
 }
-
-
-
-
-
-
