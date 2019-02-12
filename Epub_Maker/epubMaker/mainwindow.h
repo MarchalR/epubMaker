@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDir>
 
 namespace Ui {
 class MainWindow;
@@ -48,7 +49,10 @@ private:
     void createOpf(int nbPages);
     void createToc(int nbPages, QString name);
     void folderZip(QString sourceDir, QString destinationDir);
+    bool folderZip2(QString sourceDir, QString destinationDir);
     QString selectFolder();
+    static bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
+    static void recurseAddDir(QDir d, QStringList & list);
     //void recurseAddDir(QDir d, QStringList & list);
 };
 

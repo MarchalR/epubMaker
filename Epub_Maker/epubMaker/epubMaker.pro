@@ -24,13 +24,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
+#INCLUDEPATH += ../quazip
+#LIBS += -L$$PWD/../quazip -lquazip
+
+
 SOURCES += \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
-        mainwindow.h \
-    zip_file.hpp
+        mainwindow.h
 
 FORMS += \
         mainwindow.ui
@@ -42,3 +45,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     epubmaker.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../quazip/release/ -lquazip_debug
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../quazip/debug/ -lquazip_debug
+else:unix: LIBS += -L$$OUT_PWD/../quazip/ -lquazip_debug
+
+INCLUDEPATH += $$PWD/../quazip
+DEPENDPATH += $$PWD/../quazip

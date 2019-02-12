@@ -6,9 +6,11 @@
 #include <QDir>
 #include <QDebug>
 #include <QFileDialog>
-#include <zip_file.hpp>
 #include <QDirIterator>
 #include <QThread>
+#include "quazip.h"
+#include "quazipfile.h"
+#include "quazipfileinfo.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -45,90 +47,246 @@ void MainWindow::on_goButton_clicked()
 
 void MainWindow::on_testButton_clicked()
 {
-    sourceDir = "/Users/bayard/massDir/testEpub1_epub";
-    destinationDir = "/Users/bayard/massDir";
+    sourceDir = "/Users/AlDrac/massDir/testEpub1_epub";
+    destinationDir = "/Users/AlDrac/massDir/test2.epub";
 
-    folderZip(sourceDir, destinationDir);
+    QDir dir = sourceDir;
+    QString filePath = destinationDir;
+    QString comment2 = QString("test");
+    //folderZip2(sourceDir, destinationDir);
+    archive(filePath, dir, comment2);
 }
 
 
 
-void MainWindow::folderZip(QString sourceDir, QString destinationDir){
-
-      std::string utf8_destDir = destinationDir.toUtf8().constData();
-      std::string utf8_sourceDir = sourceDir.toUtf8().constData();
-
-      miniz_cpp::zip_file file;
-
-
-      std::string toCopy;
-
-
-      //file.write(utf8_sourceDir);
-      //file.save(std::string("/Users/AlDrac/massDir/test.zip"));
-
-
-      QDirIterator it(sourceDir, QDirIterator::Subdirectories);
-
-      QStringList fileList;
-         do
-         {
-             fileList << it.next().replace("/Users/bayard/massDir/testEpub1_epub","");
-             //fileList << it.next();
-         } while (it.hasNext());
-
-        qDebug() << fileList;
-
-      QStringList result;
-
-      // FONCTIONNE MAIS DOIT SUPPR DEBUT PATH -> mise en place du replace en amon mais ce qui marchait sans le replace ne fonctionne plus...
-      foreach (const QString &str, fileList) {
-                 //result += str;
-                 toCopy = str.toUtf8().constData();
-                 file.write(toCopy);
-
-         }
-
-
-      /*
-      // FONCTIONNE MAIS DOIT SUPPR DEBUT PATH
-      foreach (const QString &str, fileList) {
-             if (!(str.contains("/."))){
-                 result += str;
-                toCopy = str.toUtf8().constData();
-                qDebug() << str;
-                file.write(toCopy);
-             }
-         }
-        */
-
-
-      // SUPPR DEBUT PATH MAIS NE FONCTIONNE PAS
-      /*foreach (const QString &str, fileList) {
-             if (!(str.contains("/."))){
-                 //result += str;
-                 QString string = str;
-                 string;
-
-                 std::string stringToCons (string.toUtf8());
-                 static const std::string& stringCons = stringToCons ;
-
-
-                toCopy = stringCons;
-                qDebug() << string;
-                file.write(toCopy);
-             }
-
-         }*/
 
 
 
 
-      file.save(std::string("/Users/bayard/massDir/test.zip"));
 
-      qDebug() << result;
+
+
+bool MainWindow::archive(const QString & filePath, const QDir & dir, const QString & comment2) {
+
+    QuaZip zip(filePath);
+    zip.setFileNameCodec("IBM866");
+
+    if (!zip.open(QuaZip::mdCreate)) {
+    //myMessageOutput(true, QtDebugMsg, QString("testCreate(): zip.open(): %1").arg(zip.getZipError()));
+        return false;
+    }
+
+    if (!dir.exists()) {
+    //myMessageOutput(true, QtDebugMsg, QString("dir.exists(%1)=FALSE").arg(dir.absolutePath()));
+        return false;
+    }
+
+    QFile inFile;
+
+    QStringList sl;
+        recurseAddDir(dir, sl);
+
+    QFileInfoList files;
+    foreach (QString fn, sl) files << QFileInfo(fn);
+
+    QuaZipFile outFile(&zip);
+
+    char c;
+    foreach(QFileInfo fileInfo, files) {
+
+        if (!fileInfo.isFile())
+        continue;
+
+        QString fileNameWithRelativePath = fileInfo.filePath().remove(0, dir.absolutePath().length() + 1);
+
+        inFile.setFileName(fileInfo.filePath());
+
+        if (!inFile.open(QIODevice::ReadOnly)) {
+        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): inFile.open(): %1").arg(inFile.errorString().toLocal8Bit().constData()));
+        return false;
+        }
+
+        if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
+        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.open(): %1").arg(outFile.getZipError()));
+        return false;
+        }
+
+        while (inFile.getChar(&c) && outFile.putChar(c));
+
+        if (outFile.getZipError() != UNZ_OK) {
+     //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.putChar(): %1").arg(outFile.getZipError()));
+        return false;
+        }
+
+        outFile.close();
+
+        if (outFile.getZipError() != UNZ_OK) {
+        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.close(): %1").arg(outFile.getZipError()));
+        return false;
+        }
+
+        inFile.close();
+    }
+
+    if (!comment2.isEmpty())
+        zip.setComment(comment2);
+
+    zip.close();
+
+    if (zip.getZipError() != 0) {
+    //myMessageOutput(true, QtDebugMsg, QString("testCreate(): zip.close(): %1").arg(zip.getZipError()));
+        return false;
+    }
+
+    return true;
 
 }
+
+void MainWindow::recurseAddDir(QDir d, QStringList & list) {
+
+    QStringList qsl = d.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
+
+    foreach (QString file, qsl) {
+
+     QFileInfo finfo(QString("%1/%2").arg(d.path()).arg(file));
+
+     if (finfo.isSymLink())
+      return;
+
+     if (finfo.isDir()) {
+
+      QString dirname = finfo.fileName();
+      QDir sd(finfo.filePath());
+
+      recurseAddDir(sd, list);
+
+     } else
+      list << QDir::toNativeSeparators(finfo.filePath());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+bool MainWindow::folderZip2(QString sourceDir, QString destinationDir){
+
+     qDebug() << "Debut" ;
+
+    QDir sourceRootDir(sourceDir);
+
+    QStringList sourceFilesList; // list of path relative to source root folder
+    sourceFilesList << "relativePath.txt" << "folder" << "folder/relativePath";
+
+    QuaZip zip(destinationDir);
+
+    if(!zip.open(QuaZip::mdCreate)){
+         qDebug() << "false" ;
+        return false;
+    }
+
+    QuaZipFile outZipFile(&zip);
+
+// Copy file and folder to zip file
+
+    foreach (const QString &sourceFilePath, sourceFilesList) {
+         qDebug() << "foreach" << sourceFilePath ;
+
+        QFileInfo sourceFI(sourceRootDir.absoluteFilePath(sourceFilePath));
+
+
+    // FOLDER (this is the part that interests you!!!)
+        if(sourceFI.isDir()){
+
+            qDebug() << "DIR" ;
+
+            QString sourceFolderPath = sourceFilePath;
+            if(!sourceFolderPath.endsWith("/")){
+                sourceFolderPath.append("/");
+            }
+
+            if(!outZipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(sourceFolderPath, sourceFI.absoluteFilePath()))){
+                return false;
+            }
+            outZipFile.close();
+
+
+        // FILE
+        } else if(sourceFI.isFile()){
+             qDebug() << "FILE" ;
+
+            QFile inFile(sourceFI.absoluteFilePath());
+            if(!inFile.open(QIODevice::ReadOnly)){
+                zip.close();
+                return false;
+            }
+
+            // Note: since relative, source=dst
+            if(!outZipFile.open(QIODevice::WriteOnly, QuaZipNewInfo(sourceFilePath, sourceFI.absoluteFilePath()))){
+                inFile.close();
+                zip.close();
+                return false;
+            }
+
+            // Copy
+            qDebug() << "         copy start";
+            QByteArray buffer;
+            int chunksize = 256; // Whatever chunk size you like
+            buffer = inFile.read(chunksize);
+                while(!buffer.isEmpty()){
+                qDebug() << "         copy " << buffer.count();
+                outZipFile.write(buffer);
+                buffer = inFile.read(chunksize);
+            }
+
+            outZipFile.close();
+            inFile.close();
+        } else {
+            // Probably simlink, ignore
+        }
+    }
+    zip.close();
+    return true;
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//void MainWindow::folderZip(QString sourceDir, QString destinationDir){
+
+
+
+//}
 
 
 
