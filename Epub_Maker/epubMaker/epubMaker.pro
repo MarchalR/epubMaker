@@ -30,10 +30,14 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    zip.cpp \
+    filesandfolder.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    zip.h \
+    filesandfolder.h
 
 FORMS += \
         mainwindow.ui

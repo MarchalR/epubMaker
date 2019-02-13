@@ -1,16 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QFile>
-#include <QTextStream>
-#include <QTextCursor>
-#include <QDir>
-#include <QDebug>
-#include <QFileDialog>
-#include <QDirIterator>
-#include <QThread>
-#include "quazip.h"
-#include "quazipfile.h"
-#include "quazipfileinfo.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -29,23 +19,27 @@ void MainWindow::on_goButton_clicked()
 {
 
     QString name = ui->lineEdit->text();
-    destinationDir = destinationDir + "/" + name +".epub";
-    int nbPages = findFiles();
+    destinationDir = destinationDir + "/" + name;
+    int nbPages = filesAndFolder::findFiles(sourceDir);
 
-    createEpubDir(gabaritDir, destinationDir, true); //Create Epub Folder (EpubGen) and copy gabarit elements
-    createPages(nbPages); //Create a page for each pictures in sourceDir folder and put them in destinationDir/OEPBS folder
+    filesAndFolder::createEpubDir(gabaritDir, destinationDir, true); //Create Epub Folder (EpubGen) and copy gabarit elements
+    filesAndFolder::createPages(nbPages, destinationDir); //Create a page for each pictures in sourceDir folder and put them in destinationDir/OEPBS folder
 
     QString destinationDirImg = destinationDir + "/OEBPS/img";
-    createEpubDir(sourceDir, destinationDirImg, true); //Copy imgs from testEpub to EpubGen/OEBPS/img
+    filesAndFolder::createEpubDir(sourceDir, destinationDirImg, true); //Copy imgs from testEpub to EpubGen/OEBPS/img
 
-    createOpf(nbPages);
-    createToc(nbPages, name);
+    filesAndFolder::createOpf(nbPages, destinationDir);
+    filesAndFolder::createToc(nbPages, name, destinationDir);
 
     QDir dir = sourceDir;
-    QString filePath = destinationDir;
+    QString filePath = destinationDir  +".epub";
     QString comment2 = QString("test");
 
-    archive(filePath, dir, comment2);
+    zip::archive(filePath, dir, comment2);
+
+    qDebug() << destinationDir;
+    QDir dirToDel(destinationDir);
+    dirToDel.removeRecursively();
 
 }
 
@@ -64,111 +58,11 @@ void MainWindow::on_testButton_clicked()
 
 
 
-bool MainWindow::archive(const QString & filePath, const QDir & dir, const QString & comment2) {
-
-    QuaZip zip(filePath);
-    zip.setFileNameCodec("IBM866");
-
-    if (!zip.open(QuaZip::mdCreate)) {
-    //myMessageOutput(true, QtDebugMsg, QString("testCreate(): zip.open(): %1").arg(zip.getZipError()));
-        return false;
-    }
-
-    if (!dir.exists()) {
-    //myMessageOutput(true, QtDebugMsg, QString("dir.exists(%1)=FALSE").arg(dir.absolutePath()));
-        return false;
-    }
-
-    QFile inFile;
-
-    QStringList sl;
-        recurseAddDir(dir, sl);
-
-    QFileInfoList files;
-    foreach (QString fn, sl) files << QFileInfo(fn);
-
-    QuaZipFile outFile(&zip);
-
-    char c;
-    foreach(QFileInfo fileInfo, files) {
-
-        if (!fileInfo.isFile())
-        continue;
-
-        QString fileNameWithRelativePath = fileInfo.filePath().remove(0, dir.absolutePath().length() + 1);
-
-        inFile.setFileName(fileInfo.filePath());
-
-        if (!inFile.open(QIODevice::ReadOnly)) {
-        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): inFile.open(): %1").arg(inFile.errorString().toLocal8Bit().constData()));
-        return false;
-        }
-
-        if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
-        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.open(): %1").arg(outFile.getZipError()));
-        return false;
-        }
-
-        while (inFile.getChar(&c) && outFile.putChar(c));
-
-        if (outFile.getZipError() != UNZ_OK) {
-     //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.putChar(): %1").arg(outFile.getZipError()));
-        return false;
-        }
-
-        outFile.close();
-
-        if (outFile.getZipError() != UNZ_OK) {
-        //myMessageOutput(true, QtDebugMsg, QString("testCreate(): outFile.close(): %1").arg(outFile.getZipError()));
-        return false;
-        }
-
-        inFile.close();
-    }
-
-    if (!comment2.isEmpty())
-        zip.setComment(comment2);
-
-    zip.close();
-
-    if (zip.getZipError() != 0) {
-    //myMessageOutput(true, QtDebugMsg, QString("testCreate(): zip.close(): %1").arg(zip.getZipError()));
-        return false;
-    }
-
-    return true;
-
-}
-
-void MainWindow::recurseAddDir(QDir d, QStringList & list) {
-
-    QStringList qsl = d.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
-
-    foreach (QString file, qsl) {
-
-     QFileInfo finfo(QString("%1/%2").arg(d.path()).arg(file));
-
-     if (finfo.isSymLink())
-      return;
-
-     if (finfo.isDir()) {
-
-      QString dirname = finfo.fileName();
-      QDir sd(finfo.filePath());
-
-      recurseAddDir(sd, list);
-
-     } else
-      list << QDir::toNativeSeparators(finfo.filePath());
-    }
-}
-
 void MainWindow::on_lunchMassConvert_clicked()
 {
     QDir directory(massDir);
     QStringList allfiles = directory.entryList(QDir::AllEntries);
     for (int i = 0; i < 2; i++){
-        qDebug() << "suppr" << allfiles.value(0);
         allfiles.removeAt(0);
     }
 
@@ -176,33 +70,33 @@ void MainWindow::on_lunchMassConvert_clicked()
         sourceDir = massDir + "/" + allfiles.value(i);
         destinationDir = massDir + "/" + allfiles.value(i) + "_epub";
 
-        int nbPages = findFiles();
+        int nbPages = filesAndFolder::findFiles(sourceDir);
 
-        createEpubDir(gabaritDir, destinationDir, true); //Create Epub Folder (EpubGen) and copy gabarit elements
-        createPages(nbPages); //Create a page for each pictures in sourceDir folder and put them in destinationDir/OEPBS folder
+        filesAndFolder::createEpubDir(gabaritDir, destinationDir, true); //Create Epub Folder (EpubGen) and copy gabarit elements
+        filesAndFolder::createPages(nbPages, destinationDir); //Create a page for each pictures in sourceDir folder and put them in destinationDir/OEPBS folder
 
         QString destinationDirImg = destinationDir + "/OEBPS/img";
-        createEpubDir(sourceDir, destinationDirImg, true); //Copy imgs from testEpub to EpubGen/OEBPS/img
+        filesAndFolder::createEpubDir(sourceDir, destinationDirImg, true); //Copy imgs from testEpub to EpubGen/OEBPS/img
 
-        createOpf(nbPages);
-        createToc(nbPages, allfiles.value(i));
+        filesAndFolder::createOpf(nbPages, destinationDir);
+        filesAndFolder::createToc(nbPages, allfiles.value(i), destinationDir);
 
-        QDir dir = sourceDir;
+        QDir dir = destinationDir;
         QString filePath = destinationDir + ".epub";
         QString comment2 = QString("test");
 
-        archive(filePath, dir, comment2);
+        zip::archive(filePath, dir, comment2);
 
+
+        qDebug() << destinationDir;
+        QDir dirToDel(destinationDir);
+        dirToDel.removeRecursively();
     }
-
-    qDebug() << "file list" << allfiles.length();
-
 }
 
 
 QString MainWindow::selectFolder(){
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    qDebug() << "path" << dir;
     if ( dir.isNull() == false )
     {
         return dir;
@@ -210,133 +104,6 @@ QString MainWindow::selectFolder(){
     return nullptr;
 }
 
-int MainWindow::findFiles(){
-    QString path = sourceDir;
-    QDir dir( path );
-    dir.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
-    int total_files = static_cast<int>(dir.count());
-    qDebug() << "Total Files" << total_files;
-
-    return total_files;
-}
-
-bool MainWindow::createEpubDir(QString sourceDir, QString destinationDir,bool overWriteDirectory){
-
-    QDir originDirectory(sourceDir);
-
-        if (! originDirectory.exists())
-        {
-            return false;
-        }
-
-        QDir destinationDirectory(destinationDir);
-
-        if(destinationDirectory.exists() && !overWriteDirectory)
-        {
-            return false;
-        }
-        else if(destinationDirectory.exists() && overWriteDirectory)
-        {
-            destinationDirectory.removeRecursively();
-        }
-
-        originDirectory.mkpath(destinationDir);
-
-        foreach (QString directoryName, originDirectory.entryList(QDir::Dirs | \
-                                                                  QDir::NoDotAndDotDot))
-        {
-            QString destinationPath = destinationDir + "/" + directoryName;
-            originDirectory.mkpath(destinationPath);
-            createEpubDir(sourceDir + "/" + directoryName, destinationPath, overWriteDirectory);
-        }
-
-        foreach (QString fileName, originDirectory.entryList(QDir::Files))
-        {
-            QFile::copy(sourceDir + "/" + fileName, destinationDir + "/" + fileName);
-        }
-
-        /*! Possible race-condition mitigation? */
-        QDir finalDestination(destinationDir);
-        finalDestination.refresh();
-
-        if(finalDestination.exists())
-        {
-            return true;
-        }
-
-        return false;
-}
-
-void MainWindow::createPages(int nbPages){
-
-    for (int i=0; i < nbPages; i++){
-        QString htmlTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?> <!DOCTYPE html> <html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\"> <head> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /> <meta name=\"viewport\" content=\"width=2048, height=1536\" /> <title>Page" + QString::number( i ) + "</title> <link rel=\"stylesheet\" href=\"css/style.css\" /> </head> <body> <div id=\"bloc1\" class=\"container\"> <img class=\"page\" src=\"img/page" + QString::number( i ) + ".png\" /> </div> <script type=\"text/javascript\" charset=\"utf-8\" src=\"js/script.js\"></script> </body> </html> ";
-        QString html = htmlTxt.toHtmlEscaped();
-        QString filename= destinationDir +"/OEBPS/page" + QString::number( i ) + ".xhtml";
-        QFile file( filename );
-        if ( file.open(QIODevice::ReadWrite) )
-        {
-            QTextStream stream( &file );
-            stream << htmlTxt << endl;
-        }
-    }
-}
-
-void MainWindow::createOpf(int nbPages){
-
-    QString header = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?> <package xmlns=\"http://www.idpf.org/2007/opf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" version=\"3.0\" unique-identifier=\"bookid\" prefix=\"rendition: http://www.idpf.org/vocab/rendition/# ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/\"> <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><meta name=\"generator\" content=\"Remi Marchal\"/><meta name=\"cover\" content=\"couv.png\"/><dc:title>Let's go on holiday</dc:title><dc:creator>Lesley Ormal-Grenon, Marion Puech</dc:creator><dc:subject>jeunesse</dc:subject><dc:publisher>AlDrac Jeunesse</dc:publisher><dc:date>2016-06-30</dc:date><dc:rights>© AlDrac Éditions, 2016</dc:rights><dc:language>fr</dc:language><meta property=\"dcterms:modified\">2016-08-09T08:59:46Z</meta><dc:identifier id=\"bookid\">holiday</dc:identifier><!--fixed-layout options--><meta property=\"rendition:layout\">pre-paginated</meta><meta property=\"rendition:orientation\">landscape</meta><meta property=\"rendition:spread\">none</meta></metadata><manifest><item id=\"toc\" href=\"toc.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/><item id=\"holiJS\" href=\"js/script.js\" media-type=\"text/javascript\"/><item id=\"holiCSS.css\" href=\"css/style.css\" media-type=\"text/css\"/>";
-    QString footer = "</manifest><spine>";
-    QString ender = "</spine></package>";
-
-    QString path = destinationDir + "/OEBPS/content.opf";
-    qDebug() << "Path opf" << path;
-
-    QFile file( path );
-
-    if ( file.open(QIODevice::ReadWrite) )
-    {
-        QTextStream stream( &file );
-        stream << header << endl;
-        for (int i=0; i < nbPages; i++){
-            stream << "<item id=\"img" + QString::number( i ) + "\" href=\"img/page" + QString::number( i ) + ".png\" media-type=\"image/png\"/>" << endl;
-            stream << "<item id=\"page" + QString::number( i ) + "\" href=\"page" + QString::number( i ) + ".xhtml\" media-type=\"application/xhtml+xml\"  properties=\"scripted\"/>" << endl;
-        }
-        stream << footer << endl;
-
-        for (int i=0; i < nbPages; i++){
-            stream << "<itemref idref=\"page" + QString::number( i ) + "\"/>" << endl;
-        }
-
-        stream << ender << endl;
-    }
-}
-
-
-void MainWindow::createToc(int nbPages, QString name){
-    QString header = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\"><head><title>" + name + "</title></head><body><nav epub:type=\"page-list\"><h2>PageList</h2><ol>";
-    QString mid = "</ol></nav><nav epub:type=\"toc\" id=\"toc\"><h2>PageList</h2><ol>";
-    QString footer = "</ol></nav></body></html>";
-
-    QString path = destinationDir + "/OEBPS/toc.xhtml";
-
-    QFile file( path );
-
-    if ( file.open(QIODevice::ReadWrite) )
-    {
-        QTextStream stream( &file );
-        stream << header << endl;
-        for (int i=0; i < nbPages; i++){
-            stream << "<li><a href=\"page" + QString::number( i ) + ".xhtml\">Page" + QString::number( i ) + "</a></li>" << endl;
-        }
-        stream << mid << endl;
-
-        for (int i=0; i < nbPages; i++){
-            stream << "<li><a href=\"page" + QString::number( i ) + ".xhtml\">Page" + QString::number( i ) + "</a></li>" << endl;
-        }
-
-        stream << footer << endl;
-    }
-}
 
 void MainWindow::on_selectImageFolder_clicked()
 {

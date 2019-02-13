@@ -4,6 +4,20 @@
 #include <QMainWindow>
 #include <QDir>
 
+#include <QFile>
+#include <QTextStream>
+#include <QTextCursor>
+#include <QDir>
+#include <QDebug>
+#include <QFileDialog>
+#include <QDirIterator>
+#include <QThread>
+#include "quazip.h"
+#include "quazipfile.h"
+#include "quazipfileinfo.h"
+#include "zip.h"
+#include "filesandfolder.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -43,17 +57,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;    
-    int findFiles();
-    bool createEpubDir(QString sourceDir, QString destinationDir, bool overWriteDirectory);
-    void createPages(int nbPages);
-    void createOpf(int nbPages);
-    void createToc(int nbPages, QString name);
-    void folderZip(QString sourceDir, QString destinationDir);
-    bool folderZip2(QString sourceDir, QString destinationDir);
     QString selectFolder();
-    static bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
-    static void recurseAddDir(QDir d, QStringList & list);
-    //void recurseAddDir(QDir d, QStringList & list);
 };
 
 #endif // MAINWINDOW_H
