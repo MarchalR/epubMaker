@@ -4,6 +4,20 @@
 #include <QMainWindow>
 #include <QDir>
 
+#include <QFile>
+#include <QTextStream>
+#include <QTextCursor>
+#include <QDir>
+#include <QDebug>
+#include <QFileDialog>
+#include <QDirIterator>
+#include <QThread>
+#include "quazip.h"
+#include "quazipfile.h"
+#include "quazipfileinfo.h"
+#include "zip.h"
+#include "filesandfolder.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -20,6 +34,8 @@ public:
     QString destinationDir;
     QString gabaritDir;
     QString massDir;
+    QString toUnzip;
+    QString toEdit;
 
 private slots:
 
@@ -41,19 +57,18 @@ private slots:
 
 
 
+    void on_selectToUnzip_clicked();
+
+    void on_unzipEpub_clicked();
+
+    void on_selectToEdit_clicked();
+
+    void on_saveMeta_clicked();
+
 private:
     Ui::MainWindow *ui;    
-    int findFiles();
-    bool createEpubDir(QString sourceDir, QString destinationDir, bool overWriteDirectory);
-    void createPages(int nbPages);
-    void createOpf(int nbPages);
-    void createToc(int nbPages, QString name);
-    void folderZip(QString sourceDir, QString destinationDir);
-    bool folderZip2(QString sourceDir, QString destinationDir);
     QString selectFolder();
-    static bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
-    static void recurseAddDir(QDir d, QStringList & list);
-    //void recurseAddDir(QDir d, QStringList & list);
+    QString selectFile();
 };
 
 #endif // MAINWINDOW_H

@@ -22,6 +22,7 @@ public:
 
     static bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
     static void recurseAddDir(QDir d, QStringList & list);
+    static bool extract(const QString & filePath, const QString & extDirPath, const QString & singleFileName = QString(""));
 
 private:
 
