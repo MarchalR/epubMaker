@@ -5,6 +5,116 @@ filesAndFolder::filesAndFolder()
 
 }
 
+void filesAndFolder::editMetas(){
+    QFile inputFile("/Users/bayard/massDir/dir1_epub/OEBPS/content.opf");
+    qDebug() << inputFile.exists();
+        inputFile.open(QIODevice::ReadWrite);
+        QTextStream in(&inputFile);
+        //in.setCodec("UTF-8");
+        //qDebug() << in.readAll();
+
+        QString title;
+        QString lang;
+        QString creators;
+        QString publisher;
+        QString copyright;
+        QString EAN;
+        QString description;
+        QString layout;
+        QString orientation;
+        QString spread;
+
+
+
+
+         // A PRIORI FONCTIONNE A TERMINER EN FAIANT LES IF POUR LES AUTRES ELEMENTS ET EN PLACANT LE CONTENU DES READELEMENTTEXT() DANS VARIABLES
+
+
+
+         QXmlStreamReader xmlReader(&inputFile);
+
+
+
+
+        //Parse the XML until we reach end of it
+        while(!xmlReader.atEnd() && !xmlReader.hasError()) {
+                // Read next element
+                QXmlStreamReader::TokenType token = xmlReader.readNext();
+                //If token is just StartDocument - go to next
+                if(token == QXmlStreamReader::StartDocument) {
+                        continue;
+                }
+                //If token is StartElement - read it
+                if(token == QXmlStreamReader::StartElement) {
+
+                        if(xmlReader.name() == "title") {
+                           // qDebug() << xmlReader.readElementText();
+                            title = xmlReader.readElementText();
+                                //continue;
+                        }
+
+                        if(xmlReader.name() == "language") {
+                            //qDebug() << xmlReader.readElementText();
+                            lang = xmlReader.readElementText();
+
+                        }
+
+                        if(xmlReader.name() == "creator") {
+                            //qDebug() << xmlReader.readElementText();
+                            creators = xmlReader.readElementText();
+                                //continue;
+                        }
+
+                        if(xmlReader.name() == "publisher") {
+                            //qDebug() << xmlReader.readElementText();
+                            publisher = xmlReader.readElementText();
+                        }
+                        if(xmlReader.name() == "rights") {
+                            //qDebug() << xmlReader.readElementText();
+                                //continue;
+                            copyright = xmlReader.readElementText();
+                        }
+
+                        if(xmlReader.name() == "identifier") {
+                            //qDebug() << xmlReader.readElementText();
+                            EAN = xmlReader.readElementText();
+                        }
+                        if(xmlReader.name() == "description") {
+                            //qDebug() << xmlReader.readElementText();
+                                //continue;
+                            description = xmlReader.readElementText();
+                        }
+
+                        if(xmlReader.name() == "rendition:layout") {
+                            //qDebug() << xmlReader.readElementText();
+                            layout = xmlReader.readElementText();
+                        }
+                        if(xmlReader.name() == "orientation") {
+                            //qDebug() << xmlReader.readElementText();
+                                //continue;
+                            orientation = xmlReader.readElementText();
+                        }
+
+                        if(xmlReader.name() == "spread") {
+                            //qDebug() << xmlReader.readElementText();
+                            spread = xmlReader.readElementText();
+                        }
+                }
+        }
+        qDebug() << title << lang << creators << publisher << copyright << EAN << description << layout << orientation << spread;
+
+        if(xmlReader.hasError()) {
+            qDebug() << "error";
+                return;
+        }
+
+        //close reader and flush file
+        xmlReader.clear();
+        inputFile.close();
+
+
+}
+
 int filesAndFolder::findFiles(QString sourceDir){
     QString path = sourceDir;
     QDir dir( path );

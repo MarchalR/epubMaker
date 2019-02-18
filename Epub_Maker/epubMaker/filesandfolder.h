@@ -15,6 +15,12 @@
 #include "quazipfile.h"
 #include "quazipfileinfo.h"
 #include <QObject>
+#include <QXmlStreamReader>
+#include <QMessageBox>
+#include <QXmlSimpleReader>
+#include <QXmlDefaultHandler>
+#include <QXmlReader>
+#include <QXmlContentHandler>
 
 class filesAndFolder
 {
@@ -25,6 +31,7 @@ public:
     static void createPages(int nbPages, QString destinationDir);
     static void createOpf(int nbPages, QString destinationDir);
     static void createToc(int nbPages, QString name, QString destinationDir);
+    static void editMetas();
 };
 
 #endif // FILESANDFOLDER_H

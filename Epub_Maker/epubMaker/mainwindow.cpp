@@ -99,19 +99,16 @@ void MainWindow::on_unzipEpub_clicked()
 {
     QFileInfo fi(toUnzip);
     QString nameDir = fi.fileName();
+    QString croped_fileName = nameDir.section(".",0,0);
 
-    destinationDir = fi.absolutePath();
+    destinationDir = fi.absolutePath() + "/" + croped_fileName;
 
-    zip::extract(toUnzip, destinationDir);
-
-    qDebug() << "toUnzip" << toUnzip;
-     qDebug() << "namedir" << nameDir;
-      qDebug() << "destinationDir" << destinationDir;
+      JlCompress::extractDir	(toUnzip,destinationDir );
 }
 
 void MainWindow::on_saveMeta_clicked()
 {
-
+    filesAndFolder::editMetas();
 }
 
 

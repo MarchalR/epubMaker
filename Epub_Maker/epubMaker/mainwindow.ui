@@ -198,7 +198,7 @@
      <string>Edition des métadonnées</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
+   <widget class="QLineEdit" name="editTitle">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -208,7 +208,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_3">
+   <widget class="QLineEdit" name="editLang">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -218,7 +218,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_4">
+   <widget class="QLineEdit" name="editCreator">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -228,7 +228,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_5">
+   <widget class="QLineEdit" name="editPublisher">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -238,7 +238,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_6">
+   <widget class="QLineEdit" name="editCopyright">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -248,7 +248,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_7">
+   <widget class="QLineEdit" name="editEAN">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -258,7 +258,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_8">
+   <widget class="QLineEdit" name="editDesc">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -372,7 +372,7 @@
      <string>Spread</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_9">
+   <widget class="QLineEdit" name="editSpread">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -408,7 +408,7 @@
      <string>Layout</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_10">
+   <widget class="QLineEdit" name="editOrientation">
     <property name="geometry">
      <rect>
       <x>630</x>
@@ -418,7 +418,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_11">
+   <widget class="QLineEdit" name="editLayout">
     <property name="geometry">
      <rect>
       <x>630</x>

@@ -15,6 +15,7 @@
 #include "quazip.h"
 #include "quazipfile.h"
 #include "quazipfileinfo.h"
+#include "JlCompress.h"
 #include "zip.h"
 #include "filesandfolder.h"
 
