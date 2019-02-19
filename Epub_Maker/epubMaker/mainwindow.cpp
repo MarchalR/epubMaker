@@ -103,12 +103,34 @@ void MainWindow::on_unzipEpub_clicked()
 
     destinationDir = fi.absolutePath() + "/" + croped_fileName;
 
-      JlCompress::extractDir	(toUnzip,destinationDir );
+    JlCompress::extractDir	(toUnzip,destinationDir );
 }
 
 void MainWindow::on_saveMeta_clicked()
 {
-    filesAndFolder::editMetas();
+     QString imgFolder = destinationDir + "/OEBPS/img";
+     int nbPages = filesAndFolder::findFiles(imgFolder);
+
+     //ui->lineEdit->text()
+
+     metas["title"] = ui->editTitle->text();
+     metas["language"] = ui->editLang->text();
+     metas["creator"] = ui->editCreator->text();
+     metas["publisher"] = ui->editPublisher->text();
+     metas["rights"] = ui->editCopyright->text();
+     metas["identifier"] = ui->editEAN->text();
+     metas["description"] = ui->editDesc->text();
+     metas["layout"] = ui->editLayout->text();
+     metas["orientation"] = ui->editOrientation->text();
+     metas["spread"] = ui->editSpread->text();
+
+     filesAndFolder::changeOpf(nbPages, destinationDir, metas);
+
+     QDir dir = destinationDir;
+     QString filePath = destinationDir + ".epub";
+     QString comment2 = QString("test");
+
+     zip::archive(filePath, dir, comment2);
 }
 
 
@@ -172,7 +194,21 @@ void MainWindow::on_selectToUnzip_clicked()
 
 void MainWindow::on_selectToEdit_clicked()
 {
-    toEdit = selectFile();
-    ui->selectToEdit->setText(toEdit);
+    toUnzip = selectFile();
+    ui->selectToEdit->setText(toUnzip);
+
+    on_unzipEpub_clicked();
+
+    metas = filesAndFolder::getMetas(destinationDir);
+    ui->editTitle->setText(metas["title"]);
+    ui->editLang->setText(metas["language"]);
+    ui->editCreator->setText(metas["creator"]);
+    ui->editPublisher->setText(metas["publisher"]);
+    ui->editCopyright->setText(metas["rights"]);
+    ui->editEAN->setText(metas["identifier"]);
+    ui->editDesc->setText(metas["description"]);
+    ui->editLayout->setText(metas["layout"]);
+    ui->editOrientation->setText(metas["orientation"]);
+    ui->editSpread->setText(metas["spread"]);
 }
 

@@ -37,6 +37,7 @@ public:
     QString massDir;
     QString toUnzip;
     QString toEdit;
+    QHash<QString, QString> metas;
 
 private slots:
 

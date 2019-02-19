@@ -5,36 +5,15 @@ filesAndFolder::filesAndFolder()
 
 }
 
-void filesAndFolder::editMetas(){
-    QFile inputFile("/Users/bayard/massDir/dir1_epub/OEBPS/content.opf");
+QHash<QString, QString> filesAndFolder::getMetas(QString pathToEdit){
+    QFile inputFile(pathToEdit + "/OEBPS/content.opf");
     qDebug() << inputFile.exists();
         inputFile.open(QIODevice::ReadWrite);
         QTextStream in(&inputFile);
-        //in.setCodec("UTF-8");
-        //qDebug() << in.readAll();
 
-        QString title;
-        QString lang;
-        QString creators;
-        QString publisher;
-        QString copyright;
-        QString EAN;
-        QString description;
-        QString layout;
-        QString orientation;
-        QString spread;
-
-
-
-
-         // A PRIORI FONCTIONNE A TERMINER EN FAIANT LES IF POUR LES AUTRES ELEMENTS ET EN PLACANT LE CONTENU DES READELEMENTTEXT() DANS VARIABLES
-
-
+        QHash<QString, QString> listMetas;
 
          QXmlStreamReader xmlReader(&inputFile);
-
-
-
 
         //Parse the XML until we reach end of it
         while(!xmlReader.atEnd() && !xmlReader.hasError()) {
@@ -48,72 +27,85 @@ void filesAndFolder::editMetas(){
                 if(token == QXmlStreamReader::StartElement) {
 
                         if(xmlReader.name() == "title") {
-                           // qDebug() << xmlReader.readElementText();
-                            title = xmlReader.readElementText();
+                            listMetas["title"] = xmlReader.readElementText();
                                 //continue;
                         }
 
                         if(xmlReader.name() == "language") {
-                            //qDebug() << xmlReader.readElementText();
-                            lang = xmlReader.readElementText();
+                            listMetas["language"] = xmlReader.readElementText();
 
                         }
 
                         if(xmlReader.name() == "creator") {
-                            //qDebug() << xmlReader.readElementText();
-                            creators = xmlReader.readElementText();
-                                //continue;
+                            listMetas["creator"] = xmlReader.readElementText();
                         }
 
                         if(xmlReader.name() == "publisher") {
-                            //qDebug() << xmlReader.readElementText();
-                            publisher = xmlReader.readElementText();
+                            listMetas["publisher"] = xmlReader.readElementText();
                         }
                         if(xmlReader.name() == "rights") {
-                            //qDebug() << xmlReader.readElementText();
-                                //continue;
-                            copyright = xmlReader.readElementText();
+                            listMetas["rights"] = xmlReader.readElementText();
                         }
 
                         if(xmlReader.name() == "identifier") {
-                            //qDebug() << xmlReader.readElementText();
-                            EAN = xmlReader.readElementText();
+                            listMetas["identifier"] = xmlReader.readElementText();
                         }
                         if(xmlReader.name() == "description") {
-                            //qDebug() << xmlReader.readElementText();
-                                //continue;
-                            description = xmlReader.readElementText();
+                            listMetas["description"] = xmlReader.readElementText();
                         }
-
                         if(xmlReader.name() == "rendition:layout") {
-                            //qDebug() << xmlReader.readElementText();
-                            layout = xmlReader.readElementText();
+                            listMetas["layout"] = xmlReader.readElementText();
                         }
                         if(xmlReader.name() == "orientation") {
-                            //qDebug() << xmlReader.readElementText();
-                                //continue;
-                            orientation = xmlReader.readElementText();
+                            listMetas["orientation"] = xmlReader.readElementText();
                         }
 
                         if(xmlReader.name() == "spread") {
-                            //qDebug() << xmlReader.readElementText();
-                            spread = xmlReader.readElementText();
+                            listMetas["spread"] = xmlReader.readElementText();
                         }
                 }
         }
-        qDebug() << title << lang << creators << publisher << copyright << EAN << description << layout << orientation << spread;
 
         if(xmlReader.hasError()) {
             qDebug() << "error";
-                return;
         }
 
-        //close reader and flush file
         xmlReader.clear();
         inputFile.close();
-
-
+        return listMetas;
 }
+
+
+void filesAndFolder::changeOpf(int nbPages, QString destinationDir, QHash<QString, QString> metas){
+
+    QString header = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?> <package xmlns=\"http://www.idpf.org/2007/opf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" version=\"3.0\" unique-identifier=\"bookid\" prefix=\"rendition: http://www.idpf.org/vocab/rendition/# ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/\"> <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><meta name=\"generator\" content=\"Remi Marchal\"/><meta name=\"cover\" content=\"couv.png\"/><dc:title>"+ metas["title"] +"</dc:title><dc:creator>"+ metas["creator"] +"</dc:creator><dc:subject>jeunesse</dc:subject><dc:publisher>"+ metas["publisher"] +"</dc:publisher><dc:date>2016-06-30</dc:date><dc:rights>"+ metas["rights"] +"</dc:rights><dc:language>"+ metas["language"] +"</dc:language><meta property=\"dcterms:modified\">2016-08-09T08:59:46Z</meta><dc:identifier id=\"bookid\">"+ metas["identifier"] +"</dc:identifier><!--fixed-layout options--><meta property=\"rendition:layout\">pre-paginated</meta><meta property=\"rendition:orientation\">landscape</meta><meta property=\"rendition:spread\">none</meta></metadata><manifest><item id=\"toc\" href=\"toc.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/><item id=\"holiJS\" href=\"js/script.js\" media-type=\"text/javascript\"/><item id=\"holiCSS.css\" href=\"css/style.css\" media-type=\"text/css\"/>";
+    QString footer = "</manifest><spine>";
+    QString ender = "</spine></package>";
+
+    QString path = destinationDir + "/OEBPS/content.opf";
+
+    QFile file( path );
+    file.remove();
+
+    if ( file.open(QIODevice::ReadWrite) )
+    {
+        QTextStream stream( &file );
+        stream << header << endl;
+        for (int i=0; i < nbPages; i++){
+            stream << "<item id=\"img" + QString::number( i ) + "\" href=\"img/page" + QString::number( i ) + ".png\" media-type=\"image/png\"/>" << endl;
+            stream << "<item id=\"page" + QString::number( i ) + "\" href=\"page" + QString::number( i ) + ".xhtml\" media-type=\"application/xhtml+xml\"  properties=\"scripted\"/>" << endl;
+        }
+        stream << footer << endl;
+
+        for (int i=0; i < nbPages; i++){
+            stream << "<itemref idref=\"page" + QString::number( i ) + "\"/>" << endl;
+        }
+
+        stream << ender << endl;
+    }
+}
+
+
 
 int filesAndFolder::findFiles(QString sourceDir){
     QString path = sourceDir;

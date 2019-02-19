@@ -31,7 +31,8 @@ public:
     static void createPages(int nbPages, QString destinationDir);
     static void createOpf(int nbPages, QString destinationDir);
     static void createToc(int nbPages, QString name, QString destinationDir);
-    static void editMetas();
+    static QHash<QString, QString> getMetas(QString pathToEdit);
+    static void changeOpf(int nbPages, QString destinationDir, QHash<QString, QString> metas);
 };
 
 #endif // FILESANDFOLDER_H
