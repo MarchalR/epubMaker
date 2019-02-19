@@ -15,7 +15,9 @@ TODO :
 - Création du fichier .epub DONE
 - Formulaire pour remplir les métadonnées de l'opf à la création
 - Gestion de la couverture
-- Editions des métadonnées
-- Possibilité de dézipper les .epub
+- Editions des métadonnées DONE
+- Possibilité de dézipper les .epub DONE
 - Gestion des images sans avoir à les renommer
 - Export depuis pdf
+- Vérifier les retours de fonctions, les créations/existances de fichiers, etc...
+- Plus de commentaires
